@@ -5,7 +5,7 @@ Influence Hierarchies?
 
 The code to fit the model from ... This model captures interactions between social animals through their movement behaviours.
 
-All code in this README is contained in the gfit-setup-*.R files unless otherwise stated.
+All code in this README is contained in the gfit-setup-******.R files unless otherwise stated.
 
 ## Fitting the Model
 
@@ -28,10 +28,12 @@ The number of Brownian motion (BM) states in the model can easily be amended in 
 num.bm <- 2
 ```
 
-### Tuning Parameters
-
-A number of tuning parameters for rho are required to correspond to the number of BM states. In this example there are 2 BM states to represent 'slow' and 'fast' movement.
+A number of initial and tuning parameters for rho are required to correspond to the number of BM states. In this example there are 2 BM states to represent 'slow' and 'fast' movement.
 ```
+#rho initialisation
+rho <- c(1, 1)
+
+#rho tuning parameters
 prop.slow <- 0.02
 prop.fast <- 0.10
 ```
@@ -48,15 +50,23 @@ Note, as metioned in Section 3.2, to keep state labelling consistant, rho_1 < ..
 if(new.alpha > 0 & new.sigma > 0 & all(new.rho > 0) & new.sigma < new.rho[2] & new.rho[2] > new.rho[1])
 ```
 
-In particular, new.sigma < new.rho[2] and new.rho[1] < ... < new.rho[n].
+In particular, new.sigma < new.rho[n] and new.rho[1] < ... < new.rho[n].
+
+### Tuning Parameters
+
+
 
 There are also the following tuning parameters:
 ```
-#the parameters of the OU states
+#for the parameters of the OU states
 prop.alpha <- 0.02
 prop.sigma <- 0.02
+#for the parameters of the BM states
+prop.slow <- 0.02
+prop.fast <- 0.10
 
 #partial.var is used to resample locations that are missing in the first observation
+#this basically just creates a random walk
 partial.var <- diag(1) * 0.1
 
 #lambda_max (Section 3.1)
