@@ -1,13 +1,17 @@
-# Repo name
-
-What name?
-Influence Hierarchies?
+# influenceHierarchy
 
 The code to fit the model from ... This model captures interactions between social animals through their movement behaviours.
 
-All code in this README is contained in the gfit-setup-******.R files unless otherwise stated.
-
 ## Fitting the Model
+
+Almost all of the below information regards the gfit-setup-******.R files. These files load in data, set up the model, parameters etc for their respective analyses:
+ - gfit-setup-sim.R - simulation analysis in Section 4.1
+ - gfit-setup-baboon.R - baboon analyses in Sections 4.2 and 6
+ - gfit-setup-sim-mass.R and gfit-setup-sim-mass-parallel.R - the reliability testing in Section 5
+
+gfit-iter.R contains the MCMC loop. This ony needs to be edited when changing the number of BM states in the model (see below).
+
+All of the other files contain functions used throughout the MCMC and contain comments explaining their function.
 
 ### Data Format
 
@@ -18,7 +22,7 @@ Data is loaded into the model through an RData file containing four columns:
 3. time
 4. animal ID
 
-Currently, the code is setup for the case where the animal IDs are 1:#animals.
+Currently, the code is setup for the case where the animal IDs are 1:total.animals.
 
 ### Number of States
 
@@ -40,6 +44,7 @@ prop.fast <- 0.10
 
 The sampling of the new rho parameters in gfit-iter.R then needs to be updated to represent the new number of BM states:
 ```
+#a vector for the new rho samples
 new.rho <- c(NA, NA)
 new.rho[1] <- rho[1] + rnorm(1, 0, prop.slow)
 new.rho[2] <- rho[2] + rnorm(1, 0, prop.fast)
@@ -54,9 +59,7 @@ In particular, new.sigma < new.rho[n] and new.rho[1] < ... < new.rho[n].
 
 ### Tuning Parameters
 
-
-
-There are also the following tuning parameters:
+The model contains the following tuning parameters:
 ```
 #for the parameters of the OU states
 prop.alpha <- 0.02
@@ -66,10 +69,10 @@ prop.slow <- 0.02
 prop.fast <- 0.10
 
 #partial.var is used to resample locations that are missing in the first observation
-#this basically just creates a random walk
+#this basically just creates a random walk around the previous sample
 partial.var <- diag(1) * 0.1
 
-#lambda_max (Section 3.1)
+#lambda_max (see Section 3.1)
 max.rate <- 0.2
 
 #the lower and upper bounds of the trajectory length that is updated
@@ -148,12 +151,12 @@ traj.iter <- ceiling(num.obs / ((traj.min + traj.max) / 2)) * total.animals
 
 Initial Parameter Values:
 ```
-#main analysis
+#main analysis (mcmc.run <- 1)
 alpha <- 0.7
 sigma <- 1
 rho <- c(1, 1)
 
-#secondary analysis
+#secondary analysis (mcmc.run <- 2)
 alpha <- 2
 sigma <- 0.5
 rho <- c(2, 4)
@@ -171,10 +174,7 @@ shape1 <- shape2 <- 1 / num.states
 
 ### Baboon Results (Section 4.2)
 
-Data: 
-```
-baboons.RData
-```
+Data: see Data Availability section in the paper
 
 Seeds:
 ```
@@ -208,12 +208,12 @@ traj.iter <- ceiling(num.obs / ((traj.min + traj.max) / 2)) * total.animals
 
 Initial Parameter Values:
 ```
-#main analysis
+#main analysis (mcmc.run <- 1)
 alpha <- 0.1
 sigma <- 1
 rho <- c(1, 1)
 
-#secondary analysis
+#secondary analysis (mcmc.run <- 2)
 alpha <- 0.05
 sigma <- 0.5
 rho <- c(0.5, 0.5)
@@ -233,11 +233,13 @@ shape1 <- shape2 <- 1 / num.states
 
 ### Data Thinning (Section 6)
 
-Data: 
+The data.freq variable controls whether to fit the model to the full baboon dataset or a thinned dataset (with 1 = full dataset, 5 = thin by 5, 20 = thin by 20)
 ```
-data/baboons-thin5.RData
-data/baboons-thin20.RData
+#options: 1, 5, or 20
+data.freq <- 1
 ```
+
+Data: see Data Availability section in the paper
 
 Seeds:
 ```
@@ -253,7 +255,7 @@ Tuning Parameters:
 ```
 partial.var <- diag(1) * 2
 
-#thin-by-5
+#thin-by-5 (data.freq <- 5)
 prop.alpha <- 0.001
 prop.sigma <- 0.025
 prop.slow <- 0.005
@@ -265,7 +267,7 @@ traj.min <- 3
 traj.max <- 12
 traj.iter <- ceiling(num.obs / ((traj.min + traj.max) / 2)) * total.animals
 
-#thin-by-20
+#thin-by-20 (data.freq <- 20)
 prop.alpha <- 0.002
 prop.sigma <- 0.05 
 prop.slow <- 0.01
@@ -294,6 +296,22 @@ We used an uninformative Dirichlet prior
 ```
 shape1 <- shape2 <- 1 / num.states
 ```
+
+## Output
+
+The following files are outputted, where [n] = 1,...,total.animals and [analysis-name] is set by:
+```
+dat <- "sim1"
+```
+
+ - group-[n]states-[analysis-name].txt - these contain the current state estimates for each animal at each observation and switching time
+ - group-acc-[analysis-name].txt - contains the acceptance rates of the movement parameters and trajectory updates since the last output
+ - group-alpha-[analysis-name].txt - contains the alpha parameter samples
+ - group-obs[analysis-name].txt - contains the indexes of the augmented data (observations and switching times) that relate to observed data
+ - group-rates[analysis-name].txt - contains the transition rate samples
+ - group-rho-[analysis-name].txt - contains the rho parameter samples
+ - group-sigma-[analysis-name].txt - contains the sigma parameter samples
+ - group-times-[analysis-name].txt - contains the times of the observations and switching times to correspond with the state outputs in group-[n]states-[analysis-name].txt
 
 ## General Guidance
 
