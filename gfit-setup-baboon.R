@@ -1,5 +1,4 @@
-#setwd("U:/Documents/R-code/practice2/spat-hom-hierarchy")
-setwd("C:/Users/Owner/Documents/PhD/R-code/practice2/spat-hom-hierarchy")
+#setwd("...")
 
 rm(list = ls())
 

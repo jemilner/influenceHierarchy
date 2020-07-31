@@ -24,6 +24,26 @@ Data is loaded into the model through an RData file containing four columns:
 
 Currently, the code is setup for the case where the animal IDs are 1:total.animals.
 
+### Number of Animals
+
+The number of animals in the model is dictated by the number of distinct animal IDs in the data and is stored in:
+
+```
+total.animals <- length(animal.id)
+```
+
+The only section of code the user needs to be aware of with regards to the number of animals in the data/model is in gfit-iter.R:
+
+```
+cat(file = file.states1, all.data[, col.state, 1], "\n", append = TRUE)
+cat(file = file.states2, all.data[, col.state, 2], "\n", append = TRUE)
+cat(file = file.states3, all.data[, col.state, 3], "\n", append = TRUE)
+cat(file = file.states4, all.data[, col.state, 4], "\n", append = TRUE)
+cat(file = file.states5, all.data[, col.state, 5], "\n", append = TRUE)
+```
+
+These lines output the state estimations for each animal (5 animals in this example) and must correspond to the number of animals in the data. The filename variables are set in the relevant gfit-setup-******.R.
+
 ### Number of States
 
 The number of Brownian motion (BM) states in the model can easily be amended in the code. The current code does not allow for Ornstein-Uhlenbeck (OU) states for leading/independent animals (see Section 2.3).
@@ -74,6 +94,9 @@ partial.var <- diag(1) * 0.1
 
 #lambda_max (see Section 3.1)
 max.rate <- 0.2
+
+#number of MCMC iterations
+iter <- 10000
 
 #the lower and upper bounds of the trajectory length that is updated
 traj.min <- 3
@@ -144,6 +167,8 @@ partial.var <- diag(1) * 0.1
 
 max.rate <- 0.2
 
+iter <- 1400000
+
 traj.min <- 3
 traj.max <- 12
 traj.iter <- ceiling(num.obs / ((traj.min + traj.max) / 2)) * total.animals
@@ -201,6 +226,8 @@ partial.var <- diag(1) * 2
 
 max.rate <- 0.2
 
+iter <- 500000
+
 traj.min <- 3
 traj.max <- 40
 traj.iter <- ceiling(num.obs / ((traj.min + traj.max) / 2)) * total.animals
@@ -230,6 +257,25 @@ shape1 <- shape2 <- 1 / num.states
 ```
 
 ### Reliability (Section 5)
+
+There are three lines of code to consider when running the code relating to Section 5. All are in gfit-setup-mass-parallel.R:
+
+```
+#define the number of cores to be used
+num.cores <- 2
+
+#which parameter set you are running
+param.set <<- 1
+
+#replace 1:4 with the 'seeds' you are running
+parLapply(clust, 1:4, main)
+```
+
+Due to the large number of analyses, the reliability testing (or "mass testing" as it called throughout the code/data), is setup to run in parallel over a number of cores. The data for this is named as such:
+
+linear-set-[i]-seed-[j]-data.RData
+
+where [i] is the parameter set and [j] is the seed used to create the data (ranging from 1-100 for each parameter set). gfit-setup-sim-mass.R then controls the data load, tuning parameters etc depending on which parameter set and seeds have been set.
 
 ### Data Thinning (Section 6)
 
@@ -263,6 +309,8 @@ prop.fast <- 0.050
 
 max.rate <- 0.2
 
+iter <- 500000
+
 traj.min <- 3
 traj.max <- 12
 traj.iter <- ceiling(num.obs / ((traj.min + traj.max) / 2)) * total.animals
@@ -274,6 +322,8 @@ prop.slow <- 0.01
 prop.fast <- 0.1
 
 max.rate <- 0.05
+
+iter <- 500000
 
 traj.min <- 3
 traj.max <- 6

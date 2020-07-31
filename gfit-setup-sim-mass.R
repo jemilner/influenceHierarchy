@@ -20,7 +20,7 @@ source('gfit-utilities.R')
 set.seed(1107)
 dat <- paste("set", param.set, "-seed", seed, sep = "")
     
-load(paste("data/mass-testing2/linear-set-", param.set, "-seed-", seed, "-data.RData", sep = ""))
+load(paste("data/mass-testing/linear-set-", param.set, "-seed-", seed, "-data.RData", sep = ""))
 raw.data <- linear.data
 
 num.cols <- 7
