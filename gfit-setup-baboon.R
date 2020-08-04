@@ -45,10 +45,13 @@ if(data.freq == 1) {
     load('data/baboons-thin20.RData')
 }
 
+#data was stored as 'linear.data'
 raw.data <- linear.data
 
 num.cols <- 7
 col.x <- 1; col.y <- 2; col.time <- 3; col.id <- 4; col.type <- 5; col.state <- 6; col.jump <- 7
+#col.type is -1 if the data point is observed for an animal,
+#0 if it's a missing observation for an animal, or the id of the animal that a switching times relates to
 type.obs <- -1; type.partial <- 0
 
 #order the data by animal id and time
@@ -63,14 +66,14 @@ total.animals <- length(animal.id)
 num.pairs <- dim(combn(total.animals, 2))[2]
 num.obs <- length(unique.times)
 
-#set up data matrix
+#set up data array
 animals <- array(NA, c(num.obs, num.cols, total.animals))
 
 for(i in 1:total.animals)
 {
     which.obs <- which(raw.data[, col.id] == i)
     tmp.times <- raw.data[which.obs, col.time]
-    #which.times puts animal is data in the correct rows in the animals matrix
+    #which.times puts each animals observed data in the correct rows in the animals matrix
     which.times <- which(unique.times %in% tmp.times)
     which.missing <- c(1:num.obs)[-which.times]
     
@@ -103,7 +106,7 @@ for(i in 1:total.animals)
             animals[num.obs, c(col.x, col.y), i] <- animals[prev.obs, c(col.x, col.y), i]
         }
         
-        #for all others, use an average of the prev and next available obs
+        #for all others, use an interpolation of the prev and next available obs
         for(j in 1:num.missing)
         {
             if(which.missing[j] != 1 & which.missing[j] != num.obs)
@@ -214,6 +217,8 @@ num.params[move.code == 'B'] <- 3
 move.offset <- c(0, cumsum(num.params)[-num.states])
 total.params <- sum(num.params)
 
+#para.move holds all the current movement parameters
+#para.prop holds a new sample
 para.move <- rep(NA, total.params)
 para.prop <- rep(NA, total.params)
 
@@ -274,9 +279,9 @@ thin.behav <- 20
 #Met-Has acceptance rates
 acc.rates <- matrix(0, nrow = 2, ncol = 2)
 
-#################################
-####set up switching matrices####
-#################################
+##############################
+####set up switching array####
+##############################
 num.accepted <- num.obs - 1
 num.start.switches <- num.accepted * total.animals
 a.switches <- array(NA, c(num.start.switches, num.cols, total.animals))
@@ -290,7 +295,7 @@ for(i in 1:num.accepted)
     a.switches[interval, col.time, ] <- (1 - time.sim)*animals[i, col.time, 1] + time.sim*animals[i + 1, col.time, 1]
     
     cyclic <- TRUE
-    
+    #loop until the order of switches doesn't include a cyclic hierarchy
     while((cyclic))
     {
         cyclic <- FALSE
