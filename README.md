@@ -1,6 +1,8 @@
 # influenceHierarchy
 
-The code to fit the model from ... This model captures interactions between social animals through their movement behaviours.
+This model captures interactions between social animals through their movement behaviours.
+
+This code is used in the publication of "Modelling and Inference for the Movement of Interacting Animals" in Methods in Ecology and Evolution.
 
 ## Fitting the Model
 

@@ -256,7 +256,7 @@ file.times <- paste("chains/group-times-", dat, ".txt", sep = "")
 file.acc.rates <- paste("chains/group-acc-", dat, ".txt", sep = "")
 
 #length of mcmc iteration
-iter <- 100
+iter <- 500000
 
 #traj update lengths
 if(data.freq == 1) {
